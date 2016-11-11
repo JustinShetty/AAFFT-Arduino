@@ -1,4 +1,5 @@
 #include "generate_signal.h" //including sig_struct and the function generate_signal
+#include "sample_residual.h" //including Lambda struct and the function sample_residual
 
 void setup(){
   Serial.begin(9600);
@@ -7,14 +8,14 @@ void setup(){
   
   //printing the values returned by generate_signal();
   Serial.print("   Indices: "); //intentionally pre-spaced the word so it will align with Amplitudes
-  for(int i = 0 ; i < x.inds.length ; i++){
+  for(int i = 0 ; i < sizeof(x.inds)/sizeof(int) ; i++){
     Serial.print(x.inds[i]);
     Serial.print(" ");
   }
   Serial.print('\n');
   
   Serial.print("Amplitudes: ");
-  for(int i = 0 ; i < x.spx.length ; i++){
+  for(int i = 0 ; i < sizeof(x.spx)/sizeof(int) ; i++){
     Serial.print(x.spx[i]);
     Serial.print(" ");
   }
