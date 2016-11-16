@@ -1,12 +1,10 @@
-// calling sample_residual
 // sample_residual(r, samples, Lambda, t, sig, N)
 //       r: double[] that the function sets
-//
 // samples: ???????????????????? 
-//
 //  Lambda: struct containing frequencies and their corresponding coefficients
-//       t: double[] of t values (first column of ats)
-//     sig: double[] of sigma values (second column of ats)
+//       t: int t value
+//     sig: int sigma value
+
 const double pi = 3.14159265359; //what precision do we want for this?
 void sample_residual(double &r, double samples[], Lambda lam, double t, double sig, int N){
 	if(sizeof(lam.freq) > 0){
@@ -33,7 +31,7 @@ void sample_residual(double &r, double samples[], Lambda lam, double t, double s
 		r = *r_temp; //setting the value of our return array (include * to derefrence pointer)
 	}
 	else{
-		r = *samples;
+		r = *samples; //if lambda was empty, there are no values to compare samples to, so return samples
 	}
 
 	return;
