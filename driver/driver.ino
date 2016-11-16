@@ -1,3 +1,5 @@
+#include <math.h>
+#include "structs.h" //including self-defined data structures
 #include "generate_signal.h" //including sig_struct and the function generate_signal
 #include "sample_residual.h" //including Lambda struct and the function sample_residual
 
@@ -24,6 +26,6 @@ void setup(){
   Serial.print("Noise: ");
   Serial.println(x.nu);
 }
-void loop(){
-  
+
+void loop(){ 
 }
