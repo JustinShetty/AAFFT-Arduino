@@ -2,6 +2,7 @@
 #include "structs.h" //including self-defined data structures
 #include "generate_signal.h" //including sig_struct and the function generate_signal
 #include "sample_residual.h" //including Lambda struct and the function sample_residual
+#include "Complex/complex.h" //including Complex math library because Arduino doesn't have native complex number compatability
 
 void setup(){
   Serial.begin(9600);
