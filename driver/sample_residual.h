@@ -3,10 +3,11 @@
 
 // sample_residual(r, samples, Lambda, t, sig, N)
 //       r: complex[] that the function sets
-// samples: sampling points of form t+sj (arithmetic progression where j is an integer on [0,k-1])
-//  Lambda: struct containing frequencies and their corresponding coefficients
-//       t: int t value
-//     sig: int sigma value
+// samples: sampling points of form t+sj (arithmetic progression)
+//  lam: struct containing frequencies and their corresponding coefficients
+//       t: double t value
+//     sig: double sigma value
+//       N: int signal length (power of 2)
 
 const double pi = 3.14159265359; //what precision do we want for this?
 const Complex i(0,1);
