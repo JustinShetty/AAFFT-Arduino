@@ -5,7 +5,7 @@
 #include "structs.h" //including self-defined data structures
 #include "generate_signal.h" //including the function generate_signal
 #include "generate_tspairs.h" //including the function generate_tspairs
-//#include "sample_residual.h"
+#include "sample_residual.h"  //including the function sample_residual 
 //#include "sample_shattering.h" //including the function sample_shattering
 
 using namespace std;
@@ -40,7 +40,7 @@ void loop(){
   int width = 15;
   
   //generate the tspairs
-  tspair ats1[reps1*reps2]; //ats1
+  tspair ats1[reps1*reps2];
   tspair ats2[reps1*reps3];
   
   generate_tspairs(ats1, ats2, N, reps1, reps2, reps3);

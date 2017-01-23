@@ -10,7 +10,7 @@ struct sig_struct{
 
 struct tspair{
 	int t;
-  int s;
+  	int s;
 };
 
 struct Lambda{ //struct to store frequencies and their corresponding coefficients
