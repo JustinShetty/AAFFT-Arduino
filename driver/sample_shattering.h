@@ -1,4 +1,4 @@
-#define LIN_OUT 1
+#define LIN_OUT 1 //specifies that the linear fft output will be used
 #include <FFT.h>
 
 // sample_shattering(z, samples, Lambda, t, sig, N)
@@ -15,20 +15,22 @@ void sample_shattering(Complex z[], Complex samples[], Lambda lam, double t, dou
 	Complex temp(0,0);
 	sample_residual(temp, samples, lam, t, sig, N);
 	double n = sizeof(temp) / sizeof(Complex);
+  
   int i = 0;
   int j = 0;
   while(i < n*2){
-    fft_input[i] = temp[j];
-    fft_input[i+1] = 0;
+    fft_input[i] = temp[j]; //store data to even indices
+    fft_input[i+1] = 0; //blank odd indices
     i+=2;
     j++;
   }
+  //the setup of fft_input[] a little weird but it is how the library authors used it
   fft_window();
   fft_reorder();
-  fft_run();
-  fft_mag_lin();
-	z = Complex(1/sqrt(n),0) * Complex(0,0);
+  fft_run(); //run the fft operations
+  fft_mag_lin(); //store the linear output
+  
   for(int i = 0 ; i < n ; i++){
-    z[i] = Complex(1/sqrt(n),0) * fft_lin_out[i];
+    z[i] = Complex(1/sqrt(n),0) * fft_lin_out[i]; //store the fft results
   }
 }
