@@ -1,11 +1,16 @@
 #include <StandardCplusplus.h>
 #include <vector>
 #include <math.h>
+#include <complex.h>
+
+const double pi = 3.14159265359;
+const Complex i(0,1);
 
 #include "structs.h" //including self-defined data structures
 #include "generate_signal.h" //including the function generate_signal
 #include "generate_tspairs.h" //including the function generate_tspairs
 #include "sample_residual.h"  //including the function sample_residual 
+#include "eval_sig.h"
 //#include "sample_shattering.h" //including the function sample_shattering
 
 using namespace std;

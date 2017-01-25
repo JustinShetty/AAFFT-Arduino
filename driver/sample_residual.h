@@ -1,6 +1,3 @@
-#include "Complex/complex.h" //including Complex math library because Arduino doesn't have native complex number compatability
-// http://playground.arduino.cc/Main/ComplexMath
-
 // sample_residual(r, samples, Lambda, t, sig, N)
 //       r: complex[] that the function sets
 // samples: sampling points of form t+sj (arithmetic progression)
@@ -8,9 +5,6 @@
 //       t: double t value
 //     sig: double sigma value
 //       N: int signal length (power of 2)
-
-const double pi = 3.14159265359; //what precision do we want for this?
-const Complex i(0,1);
 
 void sample_residual(Complex &r, Complex samples[], Lambda lam, double t, double sig, int N){
 	if(sizeof(lam.freq) > 0){
@@ -40,6 +34,4 @@ void sample_residual(Complex &r, Complex samples[], Lambda lam, double t, double
 	else{
 		r = *samples; //if lambda was empty, there are no values to compare samples to, so return samples
 	}
-
-	return;
 }
