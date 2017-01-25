@@ -11,7 +11,7 @@ const Complex i(0,1);
 #include "generate_tspairs.h" //including the function generate_tspairs
 #include "sample_residual.h"  //including the function sample_residual 
 #include "eval_sig.h"
-//#include "sample_shattering.h" //including the function sample_shattering
+//#include "sample_shattering.cpp" //including the function sample_shattering
 
 using namespace std;
 

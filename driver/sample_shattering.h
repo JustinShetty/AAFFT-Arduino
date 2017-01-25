@@ -1,3 +1,6 @@
+#define LIN_OUT 1
+#include <FFT.h>
+
 // sample_shattering(z, samples, Lambda, t, sig, N)
 //       z: complex[] that the function sets
 // samples: sampling points of form t+sj (arithmetic progression)
@@ -8,14 +11,24 @@
 //
 //  Result: z is set to an array of the FFTs of residual samples
 
-void sample_shattering(Complex &z, Complex samples[], Lambda lam, double t, double sig, int N){
+void sample_shattering(Complex z[], Complex samples[], Lambda lam, double t, double sig, int N){
 	Complex temp(0,0);
 	sample_residual(temp, samples, lam, t, sig, N);
-	double n = sizeof(temp) / sizeof(Complex); 
+	double n = sizeof(temp) / sizeof(Complex);
+  int i = 0;
+  int j = 0;
+  while(i < n*2){
+    fft_input[i] = temp[j];
+    fft_input[i+1] = 0;
+    i+=2;
+    j++;
+  }
+  fft_window();
+  fft_reorder();
+  fft_run();
+  fft_mag_lin();
 	z = Complex(1/sqrt(n),0) * Complex(0,0);
-	// Complex(0,0) in line 17 should be the FFT of temp!
-	// possible FFT implementation:
-	// https://github.com/kosme/arduinoFFT/blob/master/Examples/FFT_01/FFT_01.ino
+  for(int i = 0 ; i < n ; i++){
+    z[i] = Complex(1/sqrt(n),0) * fft_lin_out[i];
+  }
 }
-
-//Currently, this function will set the input z to 0+0i ( Complex(0,0) ), but deciding on an FFT implementation to use will resolve this issue

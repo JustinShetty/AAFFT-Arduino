@@ -1,9 +1,3 @@
- //including Complex math library because Arduino doesn't have native complex number compatability
-// http://playground.arduino.cc/Main/ComplexMath
-
-const double pi = 3.14159265359;
-const Complex i(0,1);
-
 // estimate_coeffs(c, xs, lam, Omega, k, ats, reps3, N)
 //       c: complex[] of coefficients
 //      xs: samples
