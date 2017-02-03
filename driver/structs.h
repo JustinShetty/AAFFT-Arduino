@@ -14,6 +14,6 @@ struct tspair{
 };
 
 struct Lambda{ //struct to store frequencies and their corresponding coefficients
-  double freq[]; //frequencies
-  double coef[]; //coefficients
+  std::vector<double> freq; //frequencies
+  std::vector<double> coef; //coefficients
 };

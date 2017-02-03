@@ -10,8 +10,9 @@ const Complex i(0,1);
 #include "generate_signal.h" //including the function generate_signal
 #include "generate_tspairs.h" //including the function generate_tspairs
 #include "sample_residual.h"  //including the function sample_residual 
-#include "eval_sig.h"
-#include "sample_shattering.h" //including the function sample_shattering
+#include "eval_sig.h" //including the function eval_sig
+//#include "sample_shattering.h" //including the function sample_shattering
+//#include "estimate_coeffs.h" //including the function estimate_coeffs
 
 using namespace std;
 
