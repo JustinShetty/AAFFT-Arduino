@@ -8,15 +8,15 @@ Implementation of the AAFFT data sampling algorithm on the Arduino platform for 
 # Libraries
 - [StandardCplusplus](https://github.com/maniacbug/StandardCplusplus)
 - [Complex](https://github.com/RobTillaart/Arduino/tree/master/libraries/Complex)
-- [FFT](http://wiki.openmusiclabs.com/wiki/ArduinoFFT)
+- [fix_fft](https://github.com/TJC/arduino/tree/master/sketchbook/libraries/fix_fft) (prog_int8_t in fix_fft.cpp was changed to int8_t)
 
-# Components
+# Components checklist
 - [ ] test_AAFFT_with_presampling (driver)
-- [ ] sample_shattering
-- [ ] sample_residual
+- [x] sample_shattering
+- [x] sample_residual
 - [ ] identify_frequencies
 - [x] generate_tspairs
 - [x] generate_signal
 - [ ] generate_sample_set
-- [ ] eval_sig
+- [x] eval_sig
 - [ ] estimate_coeffs

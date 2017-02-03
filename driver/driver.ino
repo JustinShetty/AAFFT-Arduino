@@ -11,8 +11,7 @@ const Complex i(0,1);
 #include "generate_tspairs.h" //including the function generate_tspairs
 #include "sample_residual.h"  //including the function sample_residual 
 #include "eval_sig.h" //including the function eval_sig
-//#include "sample_shattering.h" //including the function sample_shattering
-//#include "estimate_coeffs.h" //including the function estimate_coeffs
+#include "sample_shattering.h" //including the function sample_shattering
 
 using namespace std;
 
@@ -46,8 +45,8 @@ void loop(){
   int width = 15;
   
   //generate the tspairs
-  tspair ats1[reps1*reps2];
-  tspair ats2[reps1*reps3];
+  std::vector <tspair> ats1(reps1*reps2);
+  std::vector <tspair> ats2(reps1*reps3);
   
   generate_tspairs(ats1, ats2, N, reps1, reps2, reps3);
   
