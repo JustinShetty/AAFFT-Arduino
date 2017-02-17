@@ -13,8 +13,8 @@ void generate_sample_set(double &xs1, double &xs2, double &samp1, double &samp2,
 	double temp[nr2][K];
 	xs2 = temp;
 	for(int j = 0 ; j < nr2 ; j++){
-		t = ats2[j][1];
-		s = ats2[j][2];
+		int t = ats2[j].t;
+		int s = ats2[j].s;
 		//int final = t + s*(K-1);
 		//aprog = t:s:final
 		if(input_type == 1){

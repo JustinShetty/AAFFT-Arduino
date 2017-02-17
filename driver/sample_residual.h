@@ -21,7 +21,7 @@ std::vector <Complex> sample_residual(std::vector <Complex> samples, Lambda lam,
 		for (int q = 0 ; q < k ; q++){
 			Complex vq(0,0);
 			for(int j = 0 ; j < (lam.freq).size() ; j++){
-				vq += Complex(lam.coef[j],0) * (Complex(2.0,0)*Complex(pi,0)*i*Complex(lam.freq[q]-1,0)).c_exp() * Complex(sig*(q-1)/N,0);
+				vq += Complex(lam.coef[j],0) * (Complex(2.0,0)*Complex(PI,0)*i*Complex(lam.freq[q]-1,0)).c_exp() * Complex(sig*(q-1)/N,0);
 				// * in the Complex library needs all factors to be of Complex datatype
 				// complex.c_exp() is equivalent to exp(complex) -- see Arduino Playground link for more information
 			}

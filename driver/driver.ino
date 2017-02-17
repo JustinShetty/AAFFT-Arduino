@@ -3,7 +3,6 @@
 #include <math.h>
 #include <complex.h>
 
-const double pi = 3.14159265359;
 const Complex i(0,1);
 
 #include "structs.h" //including self-defined data structures
@@ -12,6 +11,7 @@ const Complex i(0,1);
 #include "sample_residual.h"  //including the function sample_residual 
 #include "eval_sig.h" //including the function eval_sig
 #include "sample_shattering.h" //including the function sample_shattering
+#include "backburner/estimate_coeffs.h"
 
 using namespace std;
 
