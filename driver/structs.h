@@ -1,7 +1,6 @@
 #include <vector>
 
 struct sig_struct{
-	int len;
 	std::vector<int> inds;
 	std::vector<double> spx;
 	double nu;

@@ -11,7 +11,8 @@ const Complex i(0,1);
 #include "sample_residual.h"  //including the function sample_residual 
 #include "eval_sig.h" //including the function eval_sig
 #include "sample_shattering.h" //including the function sample_shattering
-#include "backburner/estimate_coeffs.h"
+#include "estimate_coeffs.h"
+#include "backburner/generate_sample_set.h"
 
 using namespace std;
 

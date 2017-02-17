@@ -15,7 +15,7 @@ void generate_signal(sig_struct &x, int sigsize, int sparsity, double noise){ //
     double s = (double) random(-100,101) / 100.0; //the ith element of spx is loaded by random() with upper bound sigsize
     x.spx.push_back(s);
   }
-  x.len = sparsity;
+  //x.len = sparsity;
   x.nu = noise; //loading nu to the passed value of noise
   
   return; //return the loaded structure
