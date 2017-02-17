@@ -5,15 +5,25 @@ void generate_sample_set(std::vector< std::vector< std::vector<Complex> > > &xs1
 						 sig_struct x, int N, int m, 
 						 std::vector <tspair> ats1, std::vector <tspair> ats2, 
 						 int width, int input_type){
+	int K = width*m;
+
 	// initialization
 	xs1.clear();
 	xs2.clear();
 	samp1.clear();
 	samp2.clear();
 
+	std::vector<Complex> row1(K, Complex(0,0));
+	std::vector< std::vector<Complex> > mat1(log(N)/log(2), row1);
+	std::vector< std::vector< std::vector<Complex> > > cube(ats1.size(), mat1);
+	xs1 = cube;
+	samp1 = cube;
 
+	std::vector<Complex> row2(K, Complex(0,0));
+	std::vector< std::vector<Complex> > mat2(ats2.size(), row2);
+	xs2 = mat2;
+	samp2 = mat2;
 
-	int K = width*m;
 	// xs1 and samp1
 	int nr1 = ats1.size();
 	for(int j = 0 ; j < nr1 ; j++){
