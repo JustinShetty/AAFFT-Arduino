@@ -1,7 +1,10 @@
+std::vector<int> flatten(std::vector< std::vector< std::vector<Complex> > > x);
+std::vector<int> flatten(std::vector< std::vector<Complex> > x);
+
 void generate_sample_set(std::vector< std::vector< std::vector<Complex> > > &xs1,
 						 std::vector< std::vector<Complex> > &xs2,
-						 std::vector< std::vector< std::vector<Complex> > > &samp1,
-						 std::vector< std::vector<Complex> > &samp2, 
+						 std::vector< std::vector< std::vector<int> > > &samp1,
+						 std::vector< std::vector<int> > &samp2, 
 						 sig_struct x, int N, int m, 
 						 std::vector <tspair> ats1, std::vector <tspair> ats2, 
 						 int width, int input_type){
@@ -17,12 +20,20 @@ void generate_sample_set(std::vector< std::vector< std::vector<Complex> > > &xs1
 	std::vector< std::vector<Complex> > mat1(log(N)/log(2), row1);
 	std::vector< std::vector< std::vector<Complex> > > cube(ats1.size(), mat1);
 	xs1 = cube;
-	samp1 = cube;
 
-	std::vector<Complex> row2(K, Complex(0,0));
-	std::vector< std::vector<Complex> > mat2(ats2.size(), row2);
-	xs2 = mat2;
-	samp2 = mat2;
+	std::vector<int> row2(K, 0);
+	std::vector< std::vector<int> > mat2(log(N)/log(2), row2);
+	std::vector< std::vector< std::vector<int> > > cube2(ats1.size(), mat2);
+	samp1 = cube2;
+
+	std::vector<Complex> row3(K, Complex(0,0));
+	std::vector< std::vector<Complex> > mat3(ats2.size(), row3);
+	xs2 = mat3;
+
+	std::vector<int> row4(K, 0);
+	std::vector< std::vector<int> > mat4(ats2.size(), row4);
+	samp2 = mat4;
+
 
 	// xs1 and samp1
 	int nr1 = ats1.size();
@@ -81,8 +92,32 @@ void generate_sample_set(std::vector< std::vector< std::vector<Complex> > > &xs1
 		}
 
 		for(int q = 0 ; q < samp2[j].size() ; q++){
-			samp2[j][q] = Complex(aprog[q], 0);
+			samp2[j][q] = aprog[q];
 		}
 	}
 
+}
+
+std::vector<int> flatten(std::vector< std::vector< std::vector<int> > > x){
+	std::vector<int> points;
+	for(int j = 0 ; j < x.size() ; j++){
+		for(int k = 0 ; k < x[j].size() ; k++){
+			for(int l = 0 ; l < x[j][k].size(); l++){
+				if( std::find(points.begin(), points.end(), x[j][k][l]) == points.end() ){
+					points.push_back(x[j][k][l]);
+				}
+			}
+		}
+	}
+}
+
+std::vector<int> flatten(std::vector< std::vector<int> > x){
+	std::vector<int> points;
+	for(int j = 0 ; j < x.size() ; j++){
+		for(int k = 0 ; k < x[j].size() ; k++){
+			if( std::find(points.begin(), points.end(), x[j][k]) == points.end() ){
+					points.push_back(x[j][k]);
+				}
+		}
+	}
 }
