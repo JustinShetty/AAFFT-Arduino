@@ -14,9 +14,11 @@ Implementation of the AAFFT data sampling algorithm on the Arduino platform for 
 - [ ] test_AAFFT_with_presampling (driver)
 - [x] sample_shattering
 - [x] sample_residual
+- [x] eval_sig
+- [ ] eval_sig_vect
 - [ ] identify_frequencies
 - [x] generate_tspairs
 - [x] generate_signal
-- [ ] generate_sample_set
+- [x] generate_sample_set
 - [x] eval_sig
-- [ ] estimate_coeffs
+- [x] estimate_coeffs
