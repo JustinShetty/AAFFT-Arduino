@@ -31,6 +31,5 @@ std::vector <Complex> sample_shattering(std::vector <Complex> samples, Lambda la
   for(int i = 0 ; i < n ; i++){
     z[i] = Complex(1/sqrt(n),0) * Complex(re[i], im[i]) ; //store the fft results
   }
-
   return z;
 }
