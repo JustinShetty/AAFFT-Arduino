@@ -9,6 +9,8 @@
 #include <math.h>
 #include <complex.h>
 
+const Complex i(0,1);
+
 struct sig_struct{
 	std::vector<int> inds;
 	std::vector<double> spx;
@@ -20,9 +22,9 @@ struct tspair{
 	int s;
 };
 
-struct Lambda{
-	std::vector<double> freq;
-	std::vector<double> coef;
+struct lam{
+	std::vector<Complex> freq;
+	std::vector<Complex> coef;
 };
 
 std::vector <Complex> median(std::vector < std::vector <Complex> > m);
@@ -32,12 +34,16 @@ Complex sum(std::vector <Complex> vec);
 bool complexComp(Complex c1, Complex c2);
 
 std::vector <Complex> estimate_coeffs(std::vector < std::vector <Complex> > xs, 
-									  Lambda lam, std::vector <double> Omega, 
+									  lam Lambda, std::vector <double> Omega, 
 									  int k, std::vector <tspair> ats, int N);
 
 std::vector <Complex> eval_sig(sig_struct x, std::vector <int> pts, int N);
 
-// fourier_sampling();
+void fourier_sampling(lam &Lambda,
+					  std::vector< std::vector< std::vector<Complex> > > &xs1,
+					  std::vector< std::vector<Complex> > &xs2,
+					  int m, std::vector <tspair> ats1, std::vector <tspair> ats2,
+					  int reps1, int reps2, int reps3, int N, int width);
 
 std::vector<int> flatten(std::vector< std::vector< std::vector<Complex> > > x);
 
@@ -53,13 +59,13 @@ void generate_sample_set(std::vector< std::vector< std::vector<Complex> > > &xs1
 
 void generate_signal(sig_struct &x, int sigsize, int sparsity, double noise);
 
-void generate_tspairs(std::vector <tspair> ats1, std::vector <tspair> ats2, int N, int reps1, int reps2, int reps3);
+void generate_tspairs(std::vector <tspair> &ats1, std::vector <tspair> &ats2, int N, int reps1, int reps2, int reps3);
 
-// identify_frequencies(xs, Lambda, k, ats, N);
+void identify_frequencies(std::vector< std::vector< std::vector<Complex> > > xs, lam Lambda, int k, std::vector <tspair> ats, int N);
 
-std::vector <Complex> sample_residual(std::vector <Complex> samples, Lambda lam, double t, double sig, int N);
+std::vector <Complex> sample_residual(std::vector <Complex> samples, lam Lambda, double t, double sig, int N);
 
-std::vector <Complex> sample_shattering(std::vector <Complex> samples, Lambda lam, double t, double sig, int N);
+std::vector <Complex> sample_shattering(std::vector <Complex> samples, lam Lambda, double t, double sig, int N);
 
 
 

@@ -1,4 +1,12 @@
-#include "AAFFT"
+/*
+	AAFFT.cpp - Ann Arbor Fast Fourier Transform on the Arduino
+	Written by Justin Shetty, Oct 2016 - April 2017
+	Adapted from MATLAB implementation (Anna C. Gilbert, University of Michigan Dept. of Mathematics)
+	URL: https://github.com/JustinShetty/AAFFT-Arduino
+	Released into the public domain
+*/
+
+#include "AAFFT.h"
 
 std::vector <Complex> median(std::vector < std::vector <Complex> > m){
 	std::vector <Complex> res( m[0].size() );
@@ -33,7 +41,7 @@ bool complexComp(Complex c1, Complex c2){
 	return a < b;
 }
 
-std::vector <Complex> estimate_coeffs(std::vector < std::vector <Complex> > xs, Lambda lam, std::vector <double> Omega, int k, std::vector <tspair> ats, int N){
+std::vector <Complex> estimate_coeffs(std::vector < std::vector <Complex> > xs, lam Lambda, std::vector <double> Omega, int k, std::vector <tspair> ats, int N){
 	int reps = ats.size();
 	int L = Omega.size();
 
@@ -43,7 +51,7 @@ std::vector <Complex> estimate_coeffs(std::vector < std::vector <Complex> > xs, 
 	for(int j = 1 ; j <= reps ; j++){ //indexing from 1 or 0?
 		int t   = ats[j].t;
 		int sig = ats[j].s;
-		std::vector <Complex> u = sample_residual( xs[j], lam, t, sig, N);
+		std::vector <Complex> u = sample_residual( xs[j], Lambda, t, sig, N);
 
 		for(int l = 1 ; l <= L ; l++){
 
@@ -80,7 +88,11 @@ std::vector <Complex> eval_sig(sig_struct x, std::vector <int> pts, int N){
 	return s;
 }
 
-// fourier_sampling();
+// void fourier_sampling(lam &Lambda,
+// 	                  std::vector< std::vector< std::vector<Complex> > > &xs1,
+// 					  std::vector< std::vector<Complex> > &xs2,
+// 					  int m, std::vector <tspair> ats1, std::vector <tspair> ats2,
+// 					  int reps1, int reps2, int reps3, int N, int width);
 
 std::vector<int> flatten(std::vector< std::vector< std::vector<int> > > x){
 	std::vector<int> points;
@@ -226,7 +238,7 @@ void generate_signal(sig_struct &x, int sigsize, int sparsity, double noise){ //
   return; //return the loaded structure
 }
 
-void generate_tspairs(std::vector <tspair> ats1, std::vector <tspair> ats2, int N, int reps1, int reps2, int reps3){
+void generate_tspairs(std::vector <tspair> &ats1, std::vector <tspair> &ats2, int N, int reps1, int reps2, int reps3){
 
 	int alpha = log(N)/log(2); //equivalent to log2(N)
   
@@ -239,6 +251,11 @@ void generate_tspairs(std::vector <tspair> ats1, std::vector <tspair> ats2, int 
 			double randomDecimal = (double) random(1000)/1000; //pseudorandom number on [0,1) to 4 decimals
 			int t =  (int) N*randomDecimal; //integer on [0,N)
       		tspair temp = {t,s};
+//          Serial.println(t);
+//          Serial.println(s);
+//          Serial.println(" ");
+//          Serial.println((j*reps2)+n);
+//          Serial.println(" ");
 			ats1[(j*reps2)+n] = temp;
 		}
 		
@@ -257,9 +274,10 @@ void generate_tspairs(std::vector <tspair> ats1, std::vector <tspair> ats2, int 
 	return;
 }
 
-// identify_frequencies(xs, Lambda, k, ats, N);
+//void identify_frequencies(std::vector< std::vector< std::vector<Complex> > > xs, lam Lambda, int k, std::vector <tspair> ats, int N);
 
-std::vector <Complex> sample_residual(std::vector <Complex> samples, Lambda lam, double t, double sig, int N){
+
+std::vector <Complex> sample_residual(std::vector <Complex> samples, lam Lambda, double t, double sig, int N){
 	std::vector <Complex> r;
 	int k = samples.size();
 
@@ -267,11 +285,11 @@ std::vector <Complex> sample_residual(std::vector <Complex> samples, Lambda lam,
 		r.push_back(Complex(0,0));
 	}
 
-	if(sizeof(lam.freq) > 0){
+	if(sizeof(Lambda.freq) > 0){
 		for (int q = 0 ; q < k ; q++){
 			Complex vq(0,0);
-			for(int j = 0 ; j < (lam.freq).size() ; j++){
-				vq += Complex(lam.coef[j],0) * (Complex(2.0,0)*Complex(PI,0)*i*Complex(lam.freq[q]-1,0)).c_exp() * Complex(sig*(q-1)/N,0);
+			for(int j = 0 ; j < (Lambda.freq).size() ; j++){
+				vq += Lambda.coef[j] * (Complex(2.0,0) * Complex(PI,0) * i * (Lambda.freq[q] - Complex(1,0) ) * Complex( sig*(q-1)/N , 0) ).c_exp();
 				// * in the Complex library needs all factors to be of Complex datatype
 				// complex.c_exp() is equivalent to exp(complex) -- see Arduino Playground link for more information
 			}
@@ -284,8 +302,8 @@ std::vector <Complex> sample_residual(std::vector <Complex> samples, Lambda lam,
 	}
 }
 
-std::vector <Complex> sample_shattering(std::vector <Complex> samples, Lambda lam, double t, double sig, int N){
-	std::vector <Complex> z = sample_residual(samples, lam, t, sig, N);
+std::vector <Complex> sample_shattering(std::vector <Complex> samples, lam Lambda, double t, double sig, int N){
+	std::vector <Complex> z = sample_residual(samples, Lambda, t, sig, N);
 	// int n = z.size();
   
   // char re[128]; //samples limited to length 128?
