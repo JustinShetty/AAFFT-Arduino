@@ -216,7 +216,7 @@ void generate_sample_set(std::vector< std::vector< std::vector<Complex> > > &xs1
 						 std::vector <tspair> ats1, std::vector <tspair> ats2, 
 						 int width, int input_type){
 	int K = width*m;
-
+	Serial.println("before initialization");
 	// initialization
 	xs1.clear();
 	xs2.clear();
@@ -241,7 +241,7 @@ void generate_sample_set(std::vector< std::vector< std::vector<Complex> > > &xs1
 	std::vector< std::vector<int> > mat4(K, row4);
 	samp2 = mat4;
 
-
+	Serial.println("after initialization");
 	// xs1 and samp1
 	int nr1 = ats1.size();
 	for(int j = 0 ; j < nr1 ; j++){
