@@ -1,4 +1,3 @@
-#include "Arduino.h"
 #ifndef AAFFT
 #define AAFFT
 
@@ -8,6 +7,7 @@
 #include <vector>
 #include <math.h>
 #include <complex.h>
+#include <PlainFFT.h>
 
 const Complex i(0,1);
 
@@ -61,7 +61,7 @@ void generate_signal(sig_struct &x, int sigsize, int sparsity, double noise);
 
 void generate_tspairs(std::vector <tspair> &ats1, std::vector <tspair> &ats2, int N, int reps1, int reps2, int reps3);
 
-void identify_frequencies(std::vector< std::vector< std::vector<Complex> > > xs, lam Lambda, int k, std::vector <tspair> ats, int N);
+std::vector <double> identify_frequencies(std::vector< std::vector< std::vector<Complex> > > xs, lam Lambda, int k, std::vector <tspair> ats, int N);
 
 std::vector <Complex> sample_residual(std::vector <Complex> samples, lam Lambda, double t, double sig, int N);
 

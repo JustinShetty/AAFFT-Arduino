@@ -29,16 +29,20 @@ std::vector <Complex> median(std::vector < std::vector <Complex> > m){
 
 Complex sum(std::vector <Complex> vec){
 	Complex a(0,0);
-	for(int i = 0 ; i < vec.size() ; i++ ){
-		a += vec[i];
+	for(int b = 0 ; b < vec.size() ; b++ ){
+		a += vec[b];
 	}
 	return a;
 }
 
-bool complexComp(Complex c1, Complex c2){
+bool complexComp(Complex c1, Complex c2){ //returns true if c1 < c2
 	double a = sqrt( pow(c1.real(),2) + pow(c1.imag(),2) );
 	double b = sqrt( pow(c2.real(),2) + pow(c2.imag(),2) );
 	return a < b;
+}
+
+double abs(Complex c){
+	return sqrt( pow(c.real(),2) + pow(c.imag(),2));
 }
 
 std::vector <Complex> estimate_coeffs(std::vector < std::vector <Complex> > xs, lam Lambda, std::vector <double> Omega, int k, std::vector <tspair> ats, int N){
@@ -69,14 +73,11 @@ std::vector <Complex> estimate_coeffs(std::vector < std::vector <Complex> > xs, 
 		}
 	}
 
-	return median(c); // NOT THAT EASY
+	return median(c); // MORE DIFFICULT THAN EXPECTED
 }
 
 std::vector <Complex> eval_sig(sig_struct x, std::vector <int> pts, int N){
-	std::vector <Complex> s;
-	for(int i = 0 ; i < pts.size() ; i++){
-		s.push_back( Complex(0,0) );
-	}
+	std::vector <Complex> s( pts.size() );
 
 	for(int j = 0 ; j < pts.size() ; j++){
 		for(int l = 0 ; l < x.inds.size(); l++){
@@ -88,11 +89,100 @@ std::vector <Complex> eval_sig(sig_struct x, std::vector <int> pts, int N){
 	return s;
 }
 
-// void fourier_sampling(lam &Lambda,
-// 	                  std::vector< std::vector< std::vector<Complex> > > &xs1,
-// 					  std::vector< std::vector<Complex> > &xs2,
-// 					  int m, std::vector <tspair> ats1, std::vector <tspair> ats2,
-// 					  int reps1, int reps2, int reps3, int N, int width);
+void fourier_sampling(lam &Lambda,
+	                  std::vector< std::vector< std::vector<Complex> > > &xs1,
+					  std::vector< std::vector<Complex> > &xs2,
+					  int m, std::vector <tspair> ats1, std::vector <tspair> ats2,
+					  int reps1, int reps2, int reps3, int N, int width){
+	int k = width*m;
+	std::vector<double> Omega(k);
+	std::vector<Complex> c(k);
+	int list_length = 0;
+
+	for(int j = 0 ; j < reps1 ; j++){
+		std::vector<Complex> row1(xs1.size(), Complex(0,0));
+		std::vector< std::vector<Complex> > mat1(xs1[0].size(), row1);
+		std::vector< std::vector< std::vector<Complex> > > temp1(reps2, mat1);
+		for(int x = 0 ; x < xs1.size() ; x++){
+			for(int y = 0 ; y < xs1[0].size() ; y++){
+				for(int z = reps2*(j-1) ; z <= reps2*(j-1)+reps2 ; z++){
+					temp1[x][y][z] = xs1[x][y][z];
+				}
+			}
+		}
+
+		std::vector<tspair> temp2;
+		for(int c = reps2*(j-1) ; c <= reps2*(j-1)+reps2 ; j++){
+			temp2.push_back(ats1[c]);
+		}
+
+		Omega = identify_frequencies(temp1, Lambda, k, temp2, N);
+
+		std::vector<Complex> row2(reps3, Complex(0,0));
+		std::vector< std::vector<Complex> > temp3(xs2[0].size(), row2);
+		for(int x = 0 ; x < reps3 ; x++){
+			for(int y = 0 ; y < xs2[0].size() ; y++){
+				temp3[x][y] = xs2[x][y];
+			}
+		}
+
+		std::vector<tspair> temp4;
+		for(int c = reps3*(j-1) ; c <= reps3*(j-1)+reps3 ; j++){
+			temp4.push_back(ats2[c]);
+		}
+
+		c = estimate_coeffs(temp3, Lambda, Omega, k, temp4, N);
+
+		for(int q = 0 ; q < Omega.size() ; q++){
+			if(Lambda.freq.size() > 0){
+				int I = 0;
+				for(int b = 0 ; b < Lambda.coef.size() ; b++){
+					if(Lambda.coef[b] == c[q]){
+						I = b;
+					}
+				}
+				if(I > 0){
+					Lambda.coef[I] += c[q];
+				}
+				else{
+					list_length++;
+					Lambda.freq.push_back(Omega[q]);
+					Lambda.coef.push_back(c[q]);
+				}
+			}
+			else{
+				list_length++;
+				Lambda.freq.push_back(Omega[q]);
+				Lambda.coef.push_back(c[q]);
+			}
+		}
+
+		int p;
+		if(k < list_length){
+			p = k;
+		}
+		else{
+			p = list_length;
+		}
+		lam temp = Lambda;
+		Lambda.freq.clear();
+		Lambda.coef.clear();
+		for(int b = 0 ; b < p ; b++){ //retaining the top k frequencies
+			Complex max = temp.coef[0];
+			int maxInd = 0;
+			for(int c = 0 ; c < temp.freq.size() ; c++){
+				if( complexComp(max,temp.coef[c]) ){
+					max = temp.coef[c];
+					maxInd = c;
+				}
+			}
+			Lambda.freq.push_back(temp.freq[maxInd]);
+			Lambda.coef.push_back(temp.coef[maxInd]);
+			temp.freq.erase(temp.freq.begin() + maxInd);
+			temp.coef.erase(temp.coef.begin() + maxInd);
+		}
+	}
+}
 
 std::vector<int> flatten(std::vector< std::vector< std::vector<int> > > x){
 	std::vector<int> points;
@@ -133,22 +223,22 @@ void generate_sample_set(std::vector< std::vector< std::vector<Complex> > > &xs1
 	samp1.clear();
 	samp2.clear();
 
-	std::vector<Complex> row1(K, Complex(0,0));
-	std::vector< std::vector<Complex> > mat1(log(N)/log(2), row1);
+	std::vector<Complex> row1(log(N)/log(2)+1, Complex(0,0));
+	std::vector< std::vector<Complex> > mat1(K, row1);
 	std::vector< std::vector< std::vector<Complex> > > cube(ats1.size(), mat1);
 	xs1 = cube;
 
-	std::vector<int> row2(K, 0);
-	std::vector< std::vector<int> > mat2(log(N)/log(2), row2);
+	std::vector<int> row2(log(N)/log(2)+1, 0);
+	std::vector< std::vector<int> > mat2(K, row2);
 	std::vector< std::vector< std::vector<int> > > cube2(ats1.size(), mat2);
 	samp1 = cube2;
 
-	std::vector<Complex> row3(K, Complex(0,0));
-	std::vector< std::vector<Complex> > mat3(ats2.size(), row3);
+	std::vector<Complex> row3(ats2.size(), Complex(0,0));
+	std::vector< std::vector<Complex> > mat3(K, row3);
 	xs2 = mat3;
 
-	std::vector<int> row4(K, 0);
-	std::vector< std::vector<int> > mat4(ats2.size(), row4);
+	std::vector<int> row4(ats2.size(), 0);
+	std::vector< std::vector<int> > mat4(K, row4);
 	samp2 = mat4;
 
 
@@ -216,12 +306,12 @@ void generate_sample_set(std::vector< std::vector< std::vector<Complex> > > &xs1
 }
 
 void generate_signal(sig_struct &x, int sigsize, int sparsity, double noise){ //function generate_signal analagous to the Matlab namesake
-  for(int i = 0 ; i < sparsity ; i++){ //iterating 'sparsity' number of times
+  for(int b = 0 ; b < sparsity ; b++){ //iterating 'sparsity' number of times
     double randomDecimal = (double) random(1000)/1000;
     int a = (int) sigsize*randomDecimal; //random integer on [0,sigsize)
     bool contains = false;
-    for(int j = 0 ; j < i ; j++){
-      if(x.inds[i] == a){
+    for(int j = 0 ; j < b ; j++){
+      if(x.inds[j] == a){
         contains = true; //if a appears in x.inds, contains indicates that it should not be included
       }
     }
@@ -232,10 +322,9 @@ void generate_signal(sig_struct &x, int sigsize, int sparsity, double noise){ //
     double s = (double) random(-100,101) / 100.0; //the ith element of spx is loaded by random() with upper bound sigsize
     x.spx.push_back(s);
   }
-  //x.len = sparsity;
   x.nu = noise; //loading nu to the passed value of noise
   
-  return; //return the loaded structure
+  return;
 }
 
 void generate_tspairs(std::vector <tspair> &ats1, std::vector <tspair> &ats2, int N, int reps1, int reps2, int reps3){
@@ -274,16 +363,59 @@ void generate_tspairs(std::vector <tspair> &ats1, std::vector <tspair> &ats2, in
 	return;
 }
 
-//void identify_frequencies(std::vector< std::vector< std::vector<Complex> > > xs, lam Lambda, int k, std::vector <tspair> ats, int N);
+std::vector <double> identify_frequencies(std::vector< std::vector< std::vector<Complex> > > xs, lam Lambda, int k, std::vector <tspair> ats, int N){
+	int reps = ats.size();
+	std::vector<double> Omega(k);
+	int alpha = log(N)/log(2);
+	int sig = ats[0].s;
+	
+	for(int b = 0 ; b < alpha ; b++){
+		std::vector<int> vote(k);
+		
+		for(int j = 0 ; j < reps ; j++){
+			int t = ats[j].t;
+			std::vector<Complex> samples;
+			for(int f = 0 ; f < xs[1].size() ; f++){
+				samples.push_back(xs[1][f][j]);
+			}
+			std::vector<Complex> u = sample_shattering(samples, Lambda, t, sig, N);
+			std::vector<Complex> v = sample_shattering(samples, Lambda, t+(N/pow(2,b+1)), sig, N);
+
+			for(int s = 0 ; s < k ; s++){
+				Complex E0 = u[s] + v[s]*(-i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
+				Complex E1 = u[s] - v[s]*(-i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
+				if(abs(E1) > abs(E0)){
+					vote[s]++;
+				}
+			}
+		}
+
+		for(int s = 0 ; s < k ; s++){
+			if(vote[s] > reps/2){
+				Omega[s] = Omega[s] + pow(2,b);
+			}
+		}
+
+	}
+	std::vector <double> temp;
+	for(int b = 0 ; b < Omega.size() ; b++){
+		bool present = false;
+		for(int c = 0 ; c < temp.size() ; c++){
+			if(Omega[b] == temp[c]){
+				present = true;
+			}
+		}
+		if(present){
+			temp.push_back(Omega[b]);
+		}
+	}
+	return temp;
+}
 
 
 std::vector <Complex> sample_residual(std::vector <Complex> samples, lam Lambda, double t, double sig, int N){
-	std::vector <Complex> r;
 	int k = samples.size();
-
-	for(int i = 0 ; i < k ; i++){ //initializing r as a vector of length k
-		r.push_back(Complex(0,0));
-	}
+	std::vector <Complex> r(k);
 
 	if(sizeof(Lambda.freq) > 0){
 		for (int q = 0 ; q < k ; q++){
@@ -303,26 +435,28 @@ std::vector <Complex> sample_residual(std::vector <Complex> samples, lam Lambda,
 }
 
 std::vector <Complex> sample_shattering(std::vector <Complex> samples, lam Lambda, double t, double sig, int N){
+	
 	std::vector <Complex> z = sample_residual(samples, Lambda, t, sig, N);
-	// int n = z.size();
+	int n = z.size();
+  	if(n & (n-1) != 0){ //if n is not a power of 2, the FFT will not work
+  		return z;
+  	}
+	
+	PlainFFT FFT = PlainFFT();
+
+	double re[n]; 
+	double im[n];
+	
+	for(int b = 0 ; b < n ; b++){
+		re[b] =  z[b].real();
+		im[b] =  z[b].imag();
+	}
+
+  	FFT.Compute(re,im,n,FFT_FORWARD);
   
-  // char re[128]; //samples limited to length 128?
-  // char im[128];
+	for(int b = 0 ; b < n ; b++){
+		z[b] = Complex(1/sqrt(n),0) * Complex(re[b], im[b]) ; //store the fft results
+	}
 
-  // for(int i = 0 ; i < n ; i++){
-  //   re[i] = (char) z[i].real();
-  //   im[i]   = (char) z[i].imag();
-  // }
-
-  //fix_fft(re, im, 7, 0); //operations occur in-place
-  // re: real component
-  // im: imaginary component
-  //  m: 0 <= n < 2^m
-  //  0: specifies FFT rather than iFFT (1)
-  
-  // for(int i = 0 ; i < n ; i++){
-  //   z[i] = Complex(1/sqrt(n),0) * Complex(re[i], im[i]) ; //store the fft results
-  // }
-
-  return z;
+	return z;
 }

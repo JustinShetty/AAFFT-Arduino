@@ -8,4 +8,4 @@ Implementation of the AAFFT data sampling algorithm on the Arduino platform for 
 # Libraries
 - [StandardCplusplus](https://github.com/maniacbug/StandardCplusplus)
 - [Complex](https://github.com/RobTillaart/Arduino/tree/master/libraries/Complex)
-- [fix_fft](https://github.com/TJC/arduino/tree/master/sketchbook/libraries/fix_fft) (prog_int8_t in fix_fft.cpp was changed to int8_t)
+- [PlainFFT](https://github.com/imagest108/arduino/tree/master/libraries/PlainFFT)
