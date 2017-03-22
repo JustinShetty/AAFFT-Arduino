@@ -36,17 +36,15 @@ Complex sum(std::vector <Complex> vec){
 }
 
 bool complexComp(Complex c1, Complex c2){ //returns true if c1 < c2
-	double a = sqrt( pow(c1.real(),2) + pow(c1.imag(),2) );
-	double b = sqrt( pow(c2.real(),2) + pow(c2.imag(),2) );
-	return a < b;
+	return c_abs(c1) < c_abs(c2);
 }
 
-double abs(Complex c){
+double c_abs(Complex c){
 	return sqrt( pow(c.real(),2) + pow(c.imag(),2));
 }
 
-std::vector <Complex> estimate_coeffs(std::vector < std::vector <Complex> > xs, lam Lambda, std::vector <double> Omega, int k, std::vector <tspair> ats, int N){
-	int reps = ats.size();
+std::vector <Complex> estimate_coeffs(Complex xs[][WIDTH*M], lam Lambda, std::vector <double> Omega, int k, tspair ats[], int N){
+	int reps = REPS3*REPS1;
 	int L = Omega.size();
 
 	std::vector <Complex> row(L, Complex(0,0) );
@@ -89,50 +87,48 @@ std::vector <Complex> eval_sig(sig_struct x, std::vector <int> pts, int N){
 	return s;
 }
 
-void fourier_sampling(lam &Lambda,
-	                  std::vector< std::vector< std::vector<Complex> > > &xs1,
-					  std::vector< std::vector<Complex> > &xs2,
-					  int m, std::vector <tspair> ats1, std::vector <tspair> ats2,
-					  int reps1, int reps2, int reps3, int N, int width){
+void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS3], Complex xs2[][WIDTH*M],
+					            int m, std::vector <tspair> ats1, std::vector <tspair> ats2,
+					            int reps1, int reps2, int reps3, int N, int width){
 	int k = width*m;
 	std::vector<double> Omega(k);
 	std::vector<Complex> c(k);
 	int list_length = 0;
 
 	for(int j = 0 ; j < reps1 ; j++){
-		std::vector<Complex> row1(xs1.size(), Complex(0,0));
-		std::vector< std::vector<Complex> > mat1(xs1[0].size(), row1);
-		std::vector< std::vector< std::vector<Complex> > > temp1(reps2, mat1);
-		for(int x = 0 ; x < xs1.size() ; x++){
-			for(int y = 0 ; y < xs1[0].size() ; y++){
-				for(int z = reps2*(j-1) ; z <= reps2*(j-1)+reps2 ; z++){
-					temp1[x][y][z] = xs1[x][y][z];
+		
+		Complex temp1[log2N+1][WIDTH*M][REPS2*REPS1];
+		for(int x = 0 ; x < log2N+1 ; x++){
+			for(int y = 0 ; y < WIDTH*M ; y++){
+				for(int z = 0 ; z < reps2 ; z++){
+					temp1[x][y][z] = xs1[x][y][z+(reps2*j)];
 				}
 			}
 		}
-
-		std::vector<tspair> temp2;
-		for(int c = reps2*(j-1) ; c <= reps2*(j-1)+reps2 ; j++){
-			temp2.push_back(ats1[c]);
+    
+		tspair temp2[REPS2];
+		for(int c = 0 ; c < reps2 ; c++){
+			temp2[c] = ats1[c+(reps2*j)];
 		}
-
+    
 		Omega = identify_frequencies(temp1, Lambda, k, temp2, N);
-
-		std::vector<Complex> row2(reps3, Complex(0,0));
-		std::vector< std::vector<Complex> > temp3(xs2[0].size(), row2);
+		Serial.print("Omega Size:");
+		Serial.println(Omega.size());
+   
+		Complex temp3[REPS3*REPS1][WIDTH*M];
 		for(int x = 0 ; x < reps3 ; x++){
-			for(int y = 0 ; y < xs2[0].size() ; y++){
+			for(int y = 0 ; y < WIDTH*M ; y++){
 				temp3[x][y] = xs2[x][y];
 			}
 		}
 
-		std::vector<tspair> temp4;
-		for(int c = reps3*(j-1) ; c <= reps3*(j-1)+reps3 ; j++){
-			temp4.push_back(ats2[c]);
+		tspair temp4[REPS3*REPS1];
+		for(int c = 0 ; c <= reps3 ; c++){
+			temp4[c] = ats2[c+(reps3*j)];
 		}
 
 		c = estimate_coeffs(temp3, Lambda, Omega, k, temp4, N);
-
+    
 		for(int q = 0 ; q < Omega.size() ; q++){
 			if(Lambda.freq.size() > 0){
 				int I = 0;
@@ -208,40 +204,11 @@ std::vector<int> flatten(std::vector< std::vector<int> > x){
 	}
 }
 
-void generate_sample_set(std::vector< std::vector< std::vector<Complex> > > &xs1,
-						 std::vector< std::vector<Complex> > &xs2,
-						 std::vector< std::vector< std::vector<int> > > &samp1,
-						 std::vector< std::vector<int> > &samp2, 
-						 sig_struct x, int N, int m, 
-						 std::vector <tspair> ats1, std::vector <tspair> ats2, 
+void generate_sample_set(Complex xs1[][WIDTH*M][REPS1*REPS3], Complex xs2[][WIDTH*M], int samp1[][WIDTH*M][REPS1*REPS3], int samp2[][WIDTH*M], 
+						 sig_struct x, int N, int m, std::vector <tspair> ats1, std::vector <tspair> ats2, 
 						 int width, int input_type){
 	int K = width*m;
-	Serial.println("before initialization");
-	// initialization
-	xs1.clear();
-	xs2.clear();
-	samp1.clear();
-	samp2.clear();
 
-	std::vector<Complex> row1(log(N)/log(2)+1, Complex(0,0));
-	std::vector< std::vector<Complex> > mat1(K, row1);
-	std::vector< std::vector< std::vector<Complex> > > cube(ats1.size(), mat1);
-	xs1 = cube;
-
-	std::vector<int> row2(log(N)/log(2)+1, 0);
-	std::vector< std::vector<int> > mat2(K, row2);
-	std::vector< std::vector< std::vector<int> > > cube2(ats1.size(), mat2);
-	samp1 = cube2;
-
-	std::vector<Complex> row3(ats2.size(), Complex(0,0));
-	std::vector< std::vector<Complex> > mat3(K, row3);
-	xs2 = mat3;
-
-	std::vector<int> row4(ats2.size(), 0);
-	std::vector< std::vector<int> > mat4(K, row4);
-	samp2 = mat4;
-
-	Serial.println("after initialization");
 	// xs1 and samp1
 	int nr1 = ats1.size();
 	for(int j = 0 ; j < nr1 ; j++){
@@ -292,13 +259,16 @@ void generate_sample_set(std::vector< std::vector< std::vector<Complex> > > &xs1
 		}
 
 		if(input_type){
-			xs2[j] = eval_sig(x, aprog, N);
+      std::vector<Complex> temp = eval_sig(x, aprog, N);
+      for(int q = 0 ; q < K ; q++){
+        xs2[j][q] = temp[q];
+      }
 		}
 		else{
 			//xs2[j] = eval_sig_vect(x, aprog, N);
 		}
 
-		for(int q = 0 ; q < samp2[j].size() ; q++){
+		for(int q = 0 ; q < K ; q++){
 			samp2[j][q] = aprog[q];
 		}
 	}
@@ -363,8 +333,8 @@ void generate_tspairs(std::vector <tspair> &ats1, std::vector <tspair> &ats2, in
 	return;
 }
 
-std::vector <double> identify_frequencies(std::vector< std::vector< std::vector<Complex> > > xs, lam Lambda, int k, std::vector <tspair> ats, int N){
-	int reps = ats.size();
+std::vector <double> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], lam Lambda, int k, tspair ats[], int N){
+	int reps = REPS2*REPS1;
 	std::vector<double> Omega(k);
 	int alpha = log(N)/log(2);
 	int sig = ats[0].s;
@@ -375,16 +345,16 @@ std::vector <double> identify_frequencies(std::vector< std::vector< std::vector<
 		for(int j = 0 ; j < reps ; j++){
 			int t = ats[j].t;
 			std::vector<Complex> samples;
-			for(int f = 0 ; f < xs[1].size() ; f++){
+			for(int f = 0 ; f < WIDTH*M ; f++){
 				samples.push_back(xs[1][f][j]);
 			}
 			std::vector<Complex> u = sample_shattering(samples, Lambda, t, sig, N);
 			std::vector<Complex> v = sample_shattering(samples, Lambda, t+(N/pow(2,b+1)), sig, N);
 
 			for(int s = 0 ; s < k ; s++){
-				Complex E0 = u[s] + v[s]*(-i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
-				Complex E1 = u[s] - v[s]*(-i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
-				if(abs(E1) > abs(E0)){
+				Complex E0 = u[s] + v[s]*(Complex(-1,0) * i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
+				Complex E1 = u[s] - v[s]*(Complex(-1,0) * i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
+				if(c_abs(E1) > c_abs(E0)){
 					vote[s]++;
 				}
 			}
@@ -397,6 +367,7 @@ std::vector <double> identify_frequencies(std::vector< std::vector< std::vector<
 		}
 
 	}
+	// Serial.println(Omega.size());
 	std::vector <double> temp;
 	for(int b = 0 ; b < Omega.size() ; b++){
 		bool present = false;
@@ -405,7 +376,8 @@ std::vector <double> identify_frequencies(std::vector< std::vector< std::vector<
 				present = true;
 			}
 		}
-		if(present){
+		if(!present){
+			Serial.println("push!");
 			temp.push_back(Omega[b]);
 		}
 	}
@@ -413,8 +385,8 @@ std::vector <double> identify_frequencies(std::vector< std::vector< std::vector<
 }
 
 
-std::vector <Complex> sample_residual(std::vector <Complex> samples, lam Lambda, double t, double sig, int N){
-	int k = samples.size();
+std::vector <Complex> sample_residual(Complex samples[], lam Lambda, double t, double sig, int N){
+	int k = WIDTH*M;
 	std::vector <Complex> r(k);
 
 	if(sizeof(Lambda.freq) > 0){
@@ -430,13 +402,21 @@ std::vector <Complex> sample_residual(std::vector <Complex> samples, lam Lambda,
 		return r;
 	}
 	else{
-		return samples;
+		std::vector<Complex> temp;
+		for(int q = 0 ; q < k ; q++){
+			temp.push_back(samples[q]);
+		}
+		return temp;
 	}
 }
 
 std::vector <Complex> sample_shattering(std::vector <Complex> samples, lam Lambda, double t, double sig, int N){
 	
-	std::vector <Complex> z = sample_residual(samples, Lambda, t, sig, N);
+	Complex temp[WIDTH*M];
+	for(int q = 0 ; q < WIDTH*M ; q++){
+		temp[q] = samples[q];
+	}
+	std::vector <Complex> z = sample_residual(temp, Lambda, t, sig, N);
 	int n = z.size();
   	if(n & (n-1) != 0){ //if n is not a power of 2, the FFT will not work
   		return z;
@@ -459,4 +439,17 @@ std::vector <Complex> sample_shattering(std::vector <Complex> samples, lam Lambd
 	}
 
 	return z;
+}
+
+int getFreeRam()
+{
+  extern int __heap_start, *__brkval; 
+  int v;
+
+  v = (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+
+  Serial.print("Free RAM = ");
+  Serial.println(v, DEC);
+
+  return v;
 }

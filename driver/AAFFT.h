@@ -9,6 +9,13 @@
 #include <complex.h>
 #include <PlainFFT.h>
 
+const int N     = (int) pow(2,8);
+const int log2N = 8;
+const int M     = 1;
+const int REPS1 = 3;
+const int REPS2 = 3;
+const int REPS3 = 3;
+const int WIDTH = 2;
 const Complex i(0,1);
 
 struct sig_struct{
@@ -33,40 +40,35 @@ Complex sum(std::vector <Complex> vec);
 
 bool complexComp(Complex c1, Complex c2);
 
-std::vector <Complex> estimate_coeffs(std::vector < std::vector <Complex> > xs, 
-									  lam Lambda, std::vector <double> Omega, 
-									  int k, std::vector <tspair> ats, int N);
+double c_abs(Complex c);
+
+std::vector <Complex> estimate_coeffs(Complex xs[][WIDTH*M], lam Lambda, std::vector <double> Omega, int k, tspair ats[], int N);
 
 std::vector <Complex> eval_sig(sig_struct x, std::vector <int> pts, int N);
 
-void fourier_sampling(lam &Lambda,
-					  std::vector< std::vector< std::vector<Complex> > > &xs1,
-					  std::vector< std::vector<Complex> > &xs2,
-					  int m, std::vector <tspair> ats1, std::vector <tspair> ats2,
-					  int reps1, int reps2, int reps3, int N, int width);
+ void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS3], Complex xs2[][WIDTH*M],
+ 					  int m, std::vector <tspair> ats1, std::vector <tspair> ats2,
+ 					  int reps1, int reps2, int reps3, int N, int width);
+
 
 std::vector<int> flatten(std::vector< std::vector< std::vector<Complex> > > x);
 
 std::vector<int> flatten(std::vector< std::vector<Complex> > x);
 
-void generate_sample_set(std::vector< std::vector< std::vector<Complex> > > &xs1,
-						 std::vector< std::vector<Complex> > &xs2,
-						 std::vector< std::vector< std::vector<int> > > &samp1,
-						 std::vector< std::vector<int> > &samp2, 
-						 sig_struct x, int N, int m, 
-						 std::vector <tspair> ats1, std::vector <tspair> ats2, 
+void generate_sample_set(Complex xs1[][WIDTH*M][REPS1*REPS3], Complex xs2[][WIDTH*M], int samp1[][WIDTH*M][REPS1*REPS3], int samp2[][WIDTH*M], 
+						 sig_struct x, int N, int m, std::vector <tspair> ats1, std::vector <tspair> ats2, 
 						 int width, int input_type);
 
 void generate_signal(sig_struct &x, int sigsize, int sparsity, double noise);
 
 void generate_tspairs(std::vector <tspair> &ats1, std::vector <tspair> &ats2, int N, int reps1, int reps2, int reps3);
 
-std::vector <double> identify_frequencies(std::vector< std::vector< std::vector<Complex> > > xs, lam Lambda, int k, std::vector <tspair> ats, int N);
+std::vector <double> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], lam Lambda, int k, tspair ats[], int N);
 
-std::vector <Complex> sample_residual(std::vector <Complex> samples, lam Lambda, double t, double sig, int N);
+std::vector <Complex> sample_residual(Complex samples[], lam Lambda, double t, double sig, int N);
 
 std::vector <Complex> sample_shattering(std::vector <Complex> samples, lam Lambda, double t, double sig, int N);
 
-
+int getFreeRam();
 
 #endif
