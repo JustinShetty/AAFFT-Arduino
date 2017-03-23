@@ -9,7 +9,7 @@
 #include "AAFFT.h"
 
 std::vector <Complex> median(std::vector < std::vector <Complex> > m){
-	std::vector <Complex> res( m[0].size() );
+	std::vector <Complex> res;
 	Complex val(0,0);
 	for(int j = 0 ; j < m.size() ; j++){
 		std::sort(m[j].begin(), m[j].end(), complexComp);
@@ -43,19 +43,19 @@ double c_abs(Complex c){
 	return sqrt( pow(c.real(),2) + pow(c.imag(),2));
 }
 
-std::vector <Complex> estimate_coeffs(Complex xs[][WIDTH*M], lam Lambda, std::vector <double> Omega, int k, tspair ats[], int N){
-	int reps = REPS3*REPS1;
+std::vector <Complex> estimate_coeffs(Complex xs[][WIDTH*M], lam Lambda, std::vector <int> Omega, int k, tspair ats[], int N){
+	int reps = REPS3;
 	int L = Omega.size();
 
 	std::vector <Complex> row(L, Complex(0,0) );
 	std::vector < std::vector <Complex> > c(reps, row); //c is a 2d vector with width: L and height: reps
 	
-	for(int j = 1 ; j <= reps ; j++){ //indexing from 1 or 0?
+	for(int j = 0 ; j < reps ; j++){
 		int t   = ats[j].t;
 		int sig = ats[j].s;
 		std::vector <Complex> u = sample_residual( xs[j], Lambda, t, sig, N);
 
-		for(int l = 1 ; l <= L ; l++){
+		for(int l = 0 ; l < L ; l++){
 
 			std::vector <Complex> tempVec;
 
@@ -67,7 +67,7 @@ std::vector <Complex> estimate_coeffs(Complex xs[][WIDTH*M], lam Lambda, std::ve
 			}
 
 			c[j][l] = sum(tempVec);
-			c[j][l] = Complex(sqrt(N)/k, 0) * c[j][l] * ( Complex(-2,0) * Complex(PI,0) * i * Complex(Omega[l],0) * (t/N)).c_exp() * Complex(t/N,0); 
+			c[j][l] = Complex(sqrt(N)/k, 0) * c[j][l] * ( Complex(-2,0) * Complex(PI,0) * i * Complex(Omega[l],0) * Complex(t/(double)N,0)).c_exp(); 
 		}
 	}
 
@@ -91,16 +91,16 @@ void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS3], Complex 
 					            int m, std::vector <tspair> ats1, std::vector <tspair> ats2,
 					            int reps1, int reps2, int reps3, int N, int width){
 	int k = width*m;
-	std::vector<double> Omega(k);
+	std::vector<int> Omega(k);
 	std::vector<Complex> c(k);
 	int list_length = 0;
 
-	for(int j = 0 ; j < reps1 ; j++){
-		
+	for(int j = 0 ; j < REPS1 ; j++){
+		//////////////////////////////////////////////////////////////////////////////////////////////
 		Complex temp1[log2N+1][WIDTH*M][REPS2*REPS1];
 		for(int x = 0 ; x < log2N+1 ; x++){
 			for(int y = 0 ; y < WIDTH*M ; y++){
-				for(int z = 0 ; z < reps2 ; z++){
+				for(int z = 0 ; z < REPS2 ; z++){
 					temp1[x][y][z] = xs1[x][y][z+(reps2*j)];
 				}
 			}
@@ -110,11 +110,14 @@ void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS3], Complex 
 		for(int c = 0 ; c < reps2 ; c++){
 			temp2[c] = ats1[c+(reps2*j)];
 		}
-    
 		Omega = identify_frequencies(temp1, Lambda, k, temp2, N);
-		Serial.print("Omega Size:");
-		Serial.println(Omega.size());
-   
+
+		// for(int q = 0 ; q < Omega.size() ; q++){
+		// 	Serial.print(Omega[q]);
+		// 	Serial.print(" ");
+		// }
+		// Serial.println(" ");
+   		//////////////////////////////////////////////////////////////////////////////////////////////
 		Complex temp3[REPS3*REPS1][WIDTH*M];
 		for(int x = 0 ; x < reps3 ; x++){
 			for(int y = 0 ; y < WIDTH*M ; y++){
@@ -122,13 +125,19 @@ void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS3], Complex 
 			}
 		}
 
-		tspair temp4[REPS3*REPS1];
+		tspair temp4[REPS3];
 		for(int c = 0 ; c <= reps3 ; c++){
 			temp4[c] = ats2[c+(reps3*j)];
 		}
 
 		c = estimate_coeffs(temp3, Lambda, Omega, k, temp4, N);
-    
+
+		// for(int q = 0 ; q < c.size() ; q++){
+		// 	Serial.print(c[q]);
+		// 	Serial.print(" ");
+		// }
+		// Serial.println();
+    	//////////////////////////////////////////////////////////////////////////////////////////////
 		for(int q = 0 ; q < Omega.size() ; q++){
 			if(Lambda.freq.size() > 0){
 				int I = 0;
@@ -152,31 +161,31 @@ void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS3], Complex 
 				Lambda.coef.push_back(c[q]);
 			}
 		}
-
-		int p;
-		if(k < list_length){
-			p = k;
-		}
-		else{
-			p = list_length;
-		}
-		lam temp = Lambda;
-		Lambda.freq.clear();
-		Lambda.coef.clear();
-		for(int b = 0 ; b < p ; b++){ //retaining the top k frequencies
-			Complex max = temp.coef[0];
-			int maxInd = 0;
-			for(int c = 0 ; c < temp.freq.size() ; c++){
-				if( complexComp(max,temp.coef[c]) ){
-					max = temp.coef[c];
-					maxInd = c;
-				}
-			}
-			Lambda.freq.push_back(temp.freq[maxInd]);
-			Lambda.coef.push_back(temp.coef[maxInd]);
-			temp.freq.erase(temp.freq.begin() + maxInd);
-			temp.coef.erase(temp.coef.begin() + maxInd);
-		}
+    
+		// int p;
+		// if(k < list_length){
+		// 	p = k;
+		// }
+		// else{
+		// 	p = list_length;
+		// }
+		// lam temp = Lambda;
+		// Lambda.freq.clear();
+		// Lambda.coef.clear();
+		// for(int b = 0 ; b < p ; b++){ //retaining the top k frequencies
+		// 	Complex max = temp.coef[0];
+		// 	int maxInd = 0;
+		// 	for(int c = 0 ; c < temp.freq.size() ; c++){
+		// 		if( complexComp(max,temp.coef[c]) ){
+		// 			max = temp.coef[c];
+		// 			maxInd = c;
+		// 		}
+		// 	}
+		// 	Lambda.freq.push_back(temp.freq[maxInd]);
+		// 	Lambda.coef.push_back(temp.coef[maxInd]);
+		// 	temp.freq.erase(temp.freq.begin() + maxInd);
+		// 	temp.coef.erase(temp.coef.begin() + maxInd);
+		// }
 	}
 }
 
@@ -310,11 +319,6 @@ void generate_tspairs(std::vector <tspair> &ats1, std::vector <tspair> &ats2, in
 			double randomDecimal = (double) random(1000)/1000; //pseudorandom number on [0,1) to 4 decimals
 			int t =  (int) N*randomDecimal; //integer on [0,N)
       		tspair temp = {t,s};
-//          Serial.println(t);
-//          Serial.println(s);
-//          Serial.println(" ");
-//          Serial.println((j*reps2)+n);
-//          Serial.println(" ");
 			ats1[(j*reps2)+n] = temp;
 		}
 		
@@ -333,9 +337,9 @@ void generate_tspairs(std::vector <tspair> &ats1, std::vector <tspair> &ats2, in
 	return;
 }
 
-std::vector <double> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], lam Lambda, int k, tspair ats[], int N){
+std::vector <int> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], lam Lambda, int k, tspair ats[], int N){
 	int reps = REPS2*REPS1;
-	std::vector<double> Omega(k);
+	std::vector<int> Omega(k);
 	int alpha = log(N)/log(2);
 	int sig = ats[0].s;
 	
@@ -354,7 +358,7 @@ std::vector <double> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], la
 			for(int s = 0 ; s < k ; s++){
 				Complex E0 = u[s] + v[s]*(Complex(-1,0) * i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
 				Complex E1 = u[s] - v[s]*(Complex(-1,0) * i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
-				if(c_abs(E1) > c_abs(E0)){
+				if(c_abs(E1) >= c_abs(E0)){
 					vote[s]++;
 				}
 			}
@@ -362,13 +366,12 @@ std::vector <double> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], la
 
 		for(int s = 0 ; s < k ; s++){
 			if(vote[s] > reps/2){
-				Omega[s] = Omega[s] + pow(2,b);
+				Omega[s] += (int)(pow(2,b));
 			}
 		}
 
 	}
-	// Serial.println(Omega.size());
-	std::vector <double> temp;
+	std::vector <int> temp;
 	for(int b = 0 ; b < Omega.size() ; b++){
 		bool present = false;
 		for(int c = 0 ; c < temp.size() ; c++){
@@ -377,7 +380,6 @@ std::vector <double> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], la
 			}
 		}
 		if(!present){
-			Serial.println("push!");
 			temp.push_back(Omega[b]);
 		}
 	}
@@ -453,3 +455,17 @@ int getFreeRam()
 
   return v;
 }
+
+void printDouble( double val, unsigned int precision){
+// prints val with number of decimal places determine by precision
+// NOTE: precision is 1 followed by the number of zeros for the desired number of decimial places
+// example: printDouble( 3.1415, 100); // prints 3.14 (two decimal places)
+   Serial.print (int(val));  //prints the int part
+   Serial.print("."); // print the decimal point
+   unsigned int frac;
+   if(val >= 0)
+       frac = (val - int(val)) * precision;
+   else
+       frac = (int(val)- val ) * precision;
+   Serial.println(frac,DEC) ;
+} 

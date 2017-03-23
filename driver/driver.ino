@@ -3,7 +3,7 @@
 void setup() {
   Serial.begin(9600);
   delay(1);
-  Serial.println("Ready");
+  Serial.println("READY");
 
   randomSeed(analogRead(0));
 
@@ -24,7 +24,7 @@ void setup() {
   std::vector <tspair> ats1(reps1*reps2);
   std::vector <tspair> ats2(reps1*reps3); 
   generate_tspairs(ats1, ats2, N, reps1, reps2, reps3);
-   
+
   //generate sample set
   int K = width*m;
   int log2N = log(N)/log(2);
@@ -34,19 +34,19 @@ void setup() {
   int samp1[log2N+1][WIDTH*M][REPS1*REPS3];
   int samp2[ats2.size()][WIDTH*M];
   
-  Complex zeroC(0,0);
-  for(int x = 0 ; x < log2N+1 ; x++){
+  Complex czero(0,0);
+  for(int xq = 0 ; xq < log2N+1 ; xq++){
     for(int y = 0 ; y < K ; y++){
       for(int z = 0 ; z < ats1.size() ; z++){
-        xs1[x][y][z] = zeroC;
-        samp1[x][y][z] = 0;
+        xs1[xq][y][z] = czero;
+        samp1[xq][y][z] = 0;
       }
     }
   }
-  for(int x = 0 ; x < ats2.size() ; x++){
+  for(int xq = 0 ; xq < ats2.size() ; xq++){
     for(int y = 0 ; y < K ; y++){
-      xs2[x][y] = zeroC;
-      samp2[x][y] = 0;
+      xs2[xq][y] = czero;
+      samp2[xq][y] = 0;
     }
   }
   
@@ -56,20 +56,12 @@ void setup() {
   lam Lambda;
   fourier_sampling(Lambda, xs1, xs2, m, ats1, ats2, reps1, reps2, reps3, N, width);
   delay(1);
-  getFreeRam();
-  // Serial.println("frequency, coefficient");
-  //Serial.println(Lambda.freq.size());
-  // for(int b = 0 ; b < Lambda.freq.size() ; b++){
-  //   Serial.print(Lambda.freq[b].real(),6);
-  //   Serial.print(" ");
-  //   Serial.print(Lambda.freq[b].imag(),6);
-  //   Serial.print("i");
-  //   Serial.print(", ");
-  //   Serial.println(Lambda.coef[b].real(),6);
-  //   Serial.print(" ");
-  //   Serial.print(Lambda.coef[b].imag(),6);
-  //   Serial.print("i");
-  // }
+
+   for(int b = 0 ; b < Lambda.freq.size() ; b++){
+     Serial.println(Lambda.freq[b]);
+     Serial.println(Lambda.coef[b]);
+     Serial.println();
+   }
   Serial.println("END"); 
 }
 

@@ -42,7 +42,7 @@ bool complexComp(Complex c1, Complex c2);
 
 double c_abs(Complex c);
 
-std::vector <Complex> estimate_coeffs(Complex xs[][WIDTH*M], lam Lambda, std::vector <double> Omega, int k, tspair ats[], int N);
+std::vector <Complex> estimate_coeffs(Complex xs[][WIDTH*M], lam Lambda, std::vector <int> Omega, int k, tspair ats[], int N);
 
 std::vector <Complex> eval_sig(sig_struct x, std::vector <int> pts, int N);
 
@@ -63,12 +63,14 @@ void generate_signal(sig_struct &x, int sigsize, int sparsity, double noise);
 
 void generate_tspairs(std::vector <tspair> &ats1, std::vector <tspair> &ats2, int N, int reps1, int reps2, int reps3);
 
-std::vector <double> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], lam Lambda, int k, tspair ats[], int N);
+std::vector <int> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], lam Lambda, int k, tspair ats[], int N);
 
 std::vector <Complex> sample_residual(Complex samples[], lam Lambda, double t, double sig, int N);
 
 std::vector <Complex> sample_shattering(std::vector <Complex> samples, lam Lambda, double t, double sig, int N);
 
 int getFreeRam();
+
+void printDouble( double val, unsigned int precision);
 
 #endif
