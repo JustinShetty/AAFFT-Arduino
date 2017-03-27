@@ -79,15 +79,15 @@ std::vector <Complex> eval_sig(sig_struct x, std::vector <int> pts, int N){
 
 	for(int j = 0 ; j < pts.size() ; j++){
 		for(int l = 0 ; l < x.inds.size(); l++){
-			s[j] += Complex(x.spx[l],0) * (Complex(2,0) * Complex(PI,0) * i * pts[j] * (x.inds[l]-1) / N ).c_exp();
+			s[j] += Complex(x.spx[l],0) * (Complex(2,0) * Complex(PI,0) * i * Complex(pts[j],0) * Complex((x.inds[l]-1) / (double)N,0) ).c_exp();
 		}
 		double randomDecimal = (double) random(1000)/1000; //gaussian distribution number pending
-		s[j] = Complex((1/sqrt(N))*(s[j],0) + (x.nu *randomDecimal)); //in MATLAB, randomDecimal would be randn(1)
+		s[j] = Complex(1/sqrt((double)N),0) * s[j] + Complex( (x.nu *randomDecimal), 0); //in MATLAB, randomDecimal would be randn(1)
 	}
 	return s;
 }
 
-void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS3], Complex xs2[][WIDTH*M],
+void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS2], Complex xs2[][WIDTH*M],
 					            int m, std::vector <tspair> ats1, std::vector <tspair> ats2,
 					            int reps1, int reps2, int reps3, int N, int width){
 	int k = width*m;
@@ -95,28 +95,31 @@ void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS3], Complex 
 	std::vector<Complex> c(k);
 	int list_length = 0;
 
-	for(int j = 0 ; j < REPS1 ; j++){
+	// for(int j = 0 ; j < REPS1 ; j++){
+	for(int j = 0 ; j < 1 ; j++){
 		//////////////////////////////////////////////////////////////////////////////////////////////
-		Complex temp1[log2N+1][WIDTH*M][REPS2*REPS1];
+		Complex temp1[log2N+1][WIDTH*M][REPS2];
 		for(int x = 0 ; x < log2N+1 ; x++){
 			for(int y = 0 ; y < WIDTH*M ; y++){
 				for(int z = 0 ; z < REPS2 ; z++){
 					temp1[x][y][z] = xs1[x][y][z+(reps2*j)];
+					//Serial.println(temp1[x][y][z]);
 				}
 			}
 		}
     
 		tspair temp2[REPS2];
 		for(int c = 0 ; c < reps2 ; c++){
-			temp2[c] = ats1[c+(reps2*j)];
+			temp2[c] = ats1[(reps2*j)+c];
 		}
 		Omega = identify_frequencies(temp1, Lambda, k, temp2, N);
 
-		// for(int q = 0 ; q < Omega.size() ; q++){
-		// 	Serial.print(Omega[q]);
-		// 	Serial.print(" ");
-		// }
-		// Serial.println(" ");
+		 // for(int q = 0 ; q < Omega.size() ; q++){
+		 // 	Serial.print(Omega[q]);
+		 // 	Serial.print(" ");
+		 // }
+		 // Serial.println();
+     Serial.println();
    		//////////////////////////////////////////////////////////////////////////////////////////////
 		Complex temp3[REPS3*REPS1][WIDTH*M];
 		for(int x = 0 ; x < reps3 ; x++){
@@ -213,7 +216,7 @@ std::vector<int> flatten(std::vector< std::vector<int> > x){
 	}
 }
 
-void generate_sample_set(Complex xs1[][WIDTH*M][REPS1*REPS3], Complex xs2[][WIDTH*M], int samp1[][WIDTH*M][REPS1*REPS3], int samp2[][WIDTH*M], 
+void generate_sample_set(Complex xs1[][WIDTH*M][REPS1*REPS2], Complex xs2[][WIDTH*M], int samp1[][WIDTH*M][REPS1*REPS2], int samp2[][WIDTH*M], 
 						 sig_struct x, int N, int m, std::vector <tspair> ats1, std::vector <tspair> ats2, 
 						 int width, int input_type){
 	int K = width*m;
@@ -230,18 +233,19 @@ void generate_sample_set(Complex xs1[][WIDTH*M][REPS1*REPS3], Complex xs2[][WIDT
 			aprog.push_back( q );
 		}
 
-		int geo_end = log(N)/log(2); // log2(N)
+		int geo_end = log2N+1;
 		for(int b = 0 ; b < geo_end ; b++){
 			
 			std::vector<int> geoprog;
 			for(int q = 0 ; q < aprog.size() ; q++){
-				geoprog.push_back( ( aprog[q] + N/((int)pow(2,b)) ) % N);
+				geoprog.push_back( ( aprog[q] + N/round(pow(2,b)) ) % N);
 			}
 
 			if(input_type){
 				std::vector<Complex> temp = eval_sig(x, geoprog, N);
 				for(int w = 0 ; w < geoprog.size() ; w++){
 					xs1[b][ w ][j] = temp[w];
+					
 				}
 			}
 			else{
@@ -337,7 +341,14 @@ void generate_tspairs(std::vector <tspair> &ats1, std::vector <tspair> &ats2, in
 	return;
 }
 
-std::vector <int> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], lam Lambda, int k, tspair ats[], int N){
+std::vector <int> identify_frequencies(Complex xs[][WIDTH*M][REPS2], lam Lambda, int k, tspair ats[], int N){
+	// for(int xq = 0 ; xq < log2N+1 ; xq++){
+	//     for(int y = 0 ; y < WIDTH*M ; y++){
+	//       for(int z = 0 ; z < REPS2*REPS1 ; z++){
+	//         Serial.println(xs[xq][y][z]);
+	//       }
+	//     }
+ //  	}
 	int reps = REPS2*REPS1;
 	std::vector<int> Omega(k);
 	int alpha = log(N)/log(2);
@@ -348,16 +359,27 @@ std::vector <int> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], lam L
 		
 		for(int j = 0 ; j < reps ; j++){
 			int t = ats[j].t;
-			std::vector<Complex> samples;
+			std::vector<Complex> samplesU;
+			std::vector<Complex> samplesV;
 			for(int f = 0 ; f < WIDTH*M ; f++){
-				samples.push_back(xs[1][f][j]);
+				samplesU.push_back(xs[0][f][j]);
 			}
-			std::vector<Complex> u = sample_shattering(samples, Lambda, t, sig, N);
-			std::vector<Complex> v = sample_shattering(samples, Lambda, t+(N/pow(2,b+1)), sig, N);
-
+			for(int f = 0 ; f < WIDTH*M ; f++){
+				samplesV.push_back(xs[b+1][f][j]);
+			}
+			std::vector<Complex> u = sample_shattering(samplesU, Lambda, t, sig, N);
+			std::vector<Complex> v = sample_shattering(samplesV, Lambda, t+(N/round(pow(2,b+1))), sig, N);
+			// for(int q = 0 ; q < v.size() ; q++){
+			// 	Serial.println(u[q]);
+			// 	Serial.println(v[q]); 
+			// }
 			for(int s = 0 ; s < k ; s++){
 				Complex E0 = u[s] + v[s]*(Complex(-1,0) * i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
 				Complex E1 = u[s] - v[s]*(Complex(-1,0) * i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
+				// Serial.print(E0);
+				// Serial.print(" ");
+				Serial.println(E1);
+				Serial.println();
 				if(c_abs(E1) >= c_abs(E0)){
 					vote[s]++;
 				}
@@ -366,7 +388,7 @@ std::vector <int> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], lam L
 
 		for(int s = 0 ; s < k ; s++){
 			if(vote[s] > reps/2){
-				Omega[s] += (int)(pow(2,b));
+				 Omega[s] += round(pow(2,b));
 			}
 		}
 
@@ -390,12 +412,14 @@ std::vector <int> identify_frequencies(Complex xs[][WIDTH*M][REPS2*REPS1], lam L
 std::vector <Complex> sample_residual(Complex samples[], lam Lambda, double t, double sig, int N){
 	int k = WIDTH*M;
 	std::vector <Complex> r(k);
-
+	// for(int q = 0 ; q < k ; q++){
+	// 	Serial.println(samples[q]);
+	// }
 	if(sizeof(Lambda.freq) > 0){
 		for (int q = 0 ; q < k ; q++){
 			Complex vq(0,0);
 			for(int j = 0 ; j < (Lambda.freq).size() ; j++){
-				vq += Lambda.coef[j] * (Complex(2.0,0) * Complex(PI,0) * i * (Lambda.freq[q] - Complex(1,0) ) * Complex( sig*(q-1)/N , 0) ).c_exp();
+				vq += Lambda.coef[j] * (Complex(2.0,0) * Complex(PI,0) * i * (Lambda.freq[q] - Complex(1,0) ) * Complex(t + (sig*(q-1)/(double)N) , 0) ).c_exp();
 				// * in the Complex library needs all factors to be of Complex datatype
 				// complex.c_exp() is equivalent to exp(complex) -- see Arduino Playground link for more information
 			}
@@ -419,6 +443,9 @@ std::vector <Complex> sample_shattering(std::vector <Complex> samples, lam Lambd
 		temp[q] = samples[q];
 	}
 	std::vector <Complex> z = sample_residual(temp, Lambda, t, sig, N);
+	// for(int q = 0 ; q < z.size() ; q++){
+	// 	Serial.println(z[q]);
+	// }
 	int n = z.size();
   	if(n & (n-1) != 0){ //if n is not a power of 2, the FFT will not work
   		return z;
@@ -435,10 +462,18 @@ std::vector <Complex> sample_shattering(std::vector <Complex> samples, lam Lambd
 	}
 
   	FFT.Compute(re,im,n,FFT_FORWARD);
+
+  	// for(int q = 0 ; q < n ; q++){
+  	// 	Serial.println(Complex(re[q],im[q]));
+  	// }
   
 	for(int b = 0 ; b < n ; b++){
 		z[b] = Complex(1/sqrt(n),0) * Complex(re[b], im[b]) ; //store the fft results
 	}
+	
+	// for(int q = 0 ; q < z.size() ; q++){
+	// 	Serial.println(z[q]);
+	// }
 
 	return z;
 }
