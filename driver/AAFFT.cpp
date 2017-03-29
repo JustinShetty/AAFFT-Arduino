@@ -62,7 +62,7 @@ std::vector <Complex> estimate_coeffs(Complex xs[][WIDTH*M], lam Lambda, std::ve
 			for(int w = 0 ; w < u.size() ; w++){
 				Complex tempComp(0,0);
 				tempComp = u[w] * ( Complex(-2,0)*Complex(PI,0)*i*Complex(Omega[l],0)
-								    *Complex(sig,0)*Complex(1/N,0) ).c_exp();
+								        *Complex(sig,0)*Complex(1/(double)N,0) ).c_exp();
 				tempVec.push_back(tempComp);
 			}
 
@@ -70,7 +70,11 @@ std::vector <Complex> estimate_coeffs(Complex xs[][WIDTH*M], lam Lambda, std::ve
 			c[j][l] = Complex(sqrt(N)/k, 0) * c[j][l] * ( Complex(-2,0) * Complex(PI,0) * i * Complex(Omega[l],0) * Complex(t/(double)N,0)).c_exp(); 
 		}
 	}
-
+  for(int x = 0 ; x < c.size() ; x++){
+    for(int y = 0 ; y < c[0].size(); y++){
+      Serial.println(c[x][y]);
+    }
+  }
 	return median(c); // MORE DIFFICULT THAN EXPECTED
 }
 
@@ -95,7 +99,7 @@ void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS2], Complex 
 	std::vector<Complex> c(k);
 	int list_length = 0;
 
-	// for(int j = 0 ; j < REPS1 ; j++){
+//	 for(int j = 0 ; j < REPS1 ; j++){
 	for(int j = 0 ; j < 1 ; j++){
 		//////////////////////////////////////////////////////////////////////////////////////////////
 		Complex temp1[log2N+1][WIDTH*M][REPS2];
@@ -114,12 +118,6 @@ void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS2], Complex 
 		}
 		Omega = identify_frequencies(temp1, Lambda, k, temp2, N);
 
-		 // for(int q = 0 ; q < Omega.size() ; q++){
-		 // 	Serial.print(Omega[q]);
-		 // 	Serial.print(" ");
-		 // }
-		 // Serial.println();
-     Serial.println();
    		//////////////////////////////////////////////////////////////////////////////////////////////
 		Complex temp3[REPS3*REPS1][WIDTH*M];
 		for(int x = 0 ; x < reps3 ; x++){
@@ -135,11 +133,9 @@ void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS2], Complex 
 
 		c = estimate_coeffs(temp3, Lambda, Omega, k, temp4, N);
 
-		// for(int q = 0 ; q < c.size() ; q++){
-		// 	Serial.print(c[q]);
-		// 	Serial.print(" ");
-		// }
-		// Serial.println();
+		for(int q = 0 ; q < Omega.size() ; q++){
+        Omega[q] += 1;
+    }
     	//////////////////////////////////////////////////////////////////////////////////////////////
 		for(int q = 0 ; q < Omega.size() ; q++){
 			if(Lambda.freq.size() > 0){
@@ -349,13 +345,14 @@ std::vector <int> identify_frequencies(Complex xs[][WIDTH*M][REPS2], lam Lambda,
 	//       }
 	//     }
  //  	}
-	int reps = REPS2*REPS1;
-	std::vector<int> Omega(k);
+	int reps = REPS2;
+	std::vector<int> Omega(k,0);
 	int alpha = log(N)/log(2);
 	int sig = ats[0].s;
 	
 	for(int b = 0 ; b < alpha ; b++){
-		std::vector<int> vote(k);
+//    for(int b = 0 ; b < 1 ; b++){
+		std::vector<int> vote(k,0);
 		
 		for(int j = 0 ; j < reps ; j++){
 			int t = ats[j].t;
@@ -369,26 +366,33 @@ std::vector <int> identify_frequencies(Complex xs[][WIDTH*M][REPS2], lam Lambda,
 			}
 			std::vector<Complex> u = sample_shattering(samplesU, Lambda, t, sig, N);
 			std::vector<Complex> v = sample_shattering(samplesV, Lambda, t+(N/round(pow(2,b+1))), sig, N);
-			// for(int q = 0 ; q < v.size() ; q++){
-			// 	Serial.println(u[q]);
-			// 	Serial.println(v[q]); 
-			// }
+
 			for(int s = 0 ; s < k ; s++){
-				Complex E0 = u[s] + v[s]*(Complex(-1,0) * i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
-				Complex E1 = u[s] - v[s]*(Complex(-1,0) * i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
-				// Serial.print(E0);
-				// Serial.print(" ");
-				Serial.println(E1);
-				Serial.println();
+//        Serial.println(Omega[s]);
+        Complex f = (Complex(-1,0) * i * Complex(PI,0) * Complex( Omega[s]/pow(2,b) ,0)).c_exp();
+//        Serial.println(f);
+				Complex E0 = u[s] + v[s]*f;
+				Complex E1 = u[s] - v[s]*f;
+//         Serial.print(u[s]);
+//         Serial.print(" ");
+//         Serial.println(v[s]);
+//         Serial.println();
+//				 Serial.print(E0);
+//				 Serial.print(" ");
+//				 Serial.println(E1);
+//				 Serial.println();
 				if(c_abs(E1) >= c_abs(E0)){
 					vote[s]++;
 				}
 			}
 		}
-
+    for(int s = 0 ; s < k ; s++){
+//      Serial.println(vote[s]);
+//        Serial.println(Omega[s]);
+    }
 		for(int s = 0 ; s < k ; s++){
 			if(vote[s] > reps/2){
-				 Omega[s] += round(pow(2,b));
+				 Omega[s] += round(pow(2,b));   
 			}
 		}
 
