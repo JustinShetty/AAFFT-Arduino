@@ -65,9 +65,10 @@ std::vector <Complex> estimate_coeffs(Complex xs[][WIDTH*M], lam Lambda, std::ve
 								        *Complex(sig,0)*Complex(1/(double)N,0) ).c_exp();
 				tempVec.push_back(tempComp);
 			}
-
 			c[j][l] = sum(tempVec);
-			c[j][l] = Complex(sqrt(N)/k, 0) * c[j][l] * ( Complex(-2,0) * Complex(PI,0) * i * Complex(Omega[l],0) * Complex(t/(double)N,0)).c_exp(); 
+			//c[j][l] = Complex(sqrt(N)/k, 0) * c[j][l] * ( Complex(-2,0) * Complex(PI,0) * i * Complex(Omega[l],0) * Complex(t/(double)N,0)).c_exp();
+//      c[j][l] *= Complex(sqrt(N)/k,0);
+//      c[j][l] *= ( Complex(-2,0) * Complex(PI,0) * i * Complex(Omega[l],0) * Complex(t/(double)N,0)).c_exp();
 		}
 	}
   for(int x = 0 ; x < c.size() ; x++){
