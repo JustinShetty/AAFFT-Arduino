@@ -62,18 +62,18 @@ std::vector <Complex> estimate_coeffs(Complex xs[][WIDTH*M], lam Lambda, std::ve
 			for(int w = 0 ; w < u.size() ; w++){
 				Complex tempComp(0,0);
 				tempComp = u[w] * ( Complex(-2,0)*Complex(PI,0)*i*Complex(Omega[l],0)
-								        *Complex(sig,0)*Complex(1/(double)N,0) ).c_exp();
+								* Complex(sig,0)* Complex(w,0) * Complex(1/(double)N,0) ).c_exp();
 				tempVec.push_back(tempComp);
 			}
 			c[j][l] = sum(tempVec);
-			//c[j][l] = Complex(sqrt(N)/k, 0) * c[j][l] * ( Complex(-2,0) * Complex(PI,0) * i * Complex(Omega[l],0) * Complex(t/(double)N,0)).c_exp();
-//      c[j][l] *= Complex(sqrt(N)/k,0);
-//      c[j][l] *= ( Complex(-2,0) * Complex(PI,0) * i * Complex(Omega[l],0) * Complex(t/(double)N,0)).c_exp();
+			c[j][l] = Complex(sqrt(N)/k, 0) * c[j][l] * ( Complex(-2,0) * Complex(PI,0) * i * Complex(Omega[l],0) * Complex(t/(double)N,0)).c_exp();
+    		// c[j][l] *= Complex(sqrt(N)/k,0);
+    		// c[j][l] *= ( Complex(-2,0) * Complex(PI,0) * i * Complex(Omega[l],0) * Complex(t/(double)N,0)).c_exp();
 		}
 	}
   for(int x = 0 ; x < c.size() ; x++){
     for(int y = 0 ; y < c[0].size(); y++){
-      Serial.println(c[x][y]);
+      // Serial.println(c[x][y]);
     }
   }
 	return median(c); // MORE DIFFICULT THAN EXPECTED
@@ -100,8 +100,8 @@ void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS2], Complex 
 	std::vector<Complex> c(k);
 	int list_length = 0;
 
-//	 for(int j = 0 ; j < REPS1 ; j++){
-	for(int j = 0 ; j < 1 ; j++){
+	 for(int j = 0 ; j < REPS1 ; j++){
+//	 for(int j = 0 ; j < 1 ; j++){
 		//////////////////////////////////////////////////////////////////////////////////////////////
 		Complex temp1[log2N+1][WIDTH*M][REPS2];
 		for(int x = 0 ; x < log2N+1 ; x++){
@@ -135,8 +135,9 @@ void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS2], Complex 
 		c = estimate_coeffs(temp3, Lambda, Omega, k, temp4, N);
 
 		for(int q = 0 ; q < Omega.size() ; q++){
-        Omega[q] += 1;
-    }
+       		Omega[q] += 1;
+//       		Serial.println(Omega[q]);
+    	}
     	//////////////////////////////////////////////////////////////////////////////////////////////
 		for(int q = 0 ; q < Omega.size() ; q++){
 			if(Lambda.freq.size() > 0){
@@ -161,7 +162,13 @@ void fourier_sampling(lam &Lambda, Complex xs1[][WIDTH*M][REPS1*REPS2], Complex 
 				Lambda.coef.push_back(c[q]);
 			}
 		}
-    
+    for(int b = 0 ; b < Lambda.freq.size() ; b++){
+     Serial.print(Lambda.freq[b]);
+     Serial.print(" ");
+     Serial.println(Lambda.coef[b]);
+     Serial.println();
+   }
+   Serial.println();
 		// int p;
 		// if(k < list_length){
 		// 	p = k;
@@ -420,15 +427,20 @@ std::vector <Complex> sample_residual(Complex samples[], lam Lambda, double t, d
 	// for(int q = 0 ; q < k ; q++){
 	// 	Serial.println(samples[q]);
 	// }
-	if(sizeof(Lambda.freq) > 0){
+	if(Lambda.freq.size() > 0){
 		for (int q = 0 ; q < k ; q++){
 			Complex vq(0,0);
 			for(int j = 0 ; j < (Lambda.freq).size() ; j++){
-				vq += Lambda.coef[j] * (Complex(2.0,0) * Complex(PI,0) * i * (Lambda.freq[q] - Complex(1,0) ) * Complex(t + (sig*(q-1)/(double)N) , 0) ).c_exp();
+				vq += Lambda.coef[j] * (Complex(2.0,0) * Complex(PI,0) * i * (Lambda.freq[q] - Complex(1,0) ) * Complex(t + (sig*q/(double)N) , 0) ).c_exp();
 				// * in the Complex library needs all factors to be of Complex datatype
 				// complex.c_exp() is equivalent to exp(complex) -- see Arduino Playground link for more information
 			}
+      Serial.print("v[q]: ");
+      Serial.println((1/sqrt(N))*vq);
+      Serial.print("samples[q]: ");
+      Serial.println(samples[q]);
 			r[q] = samples[q] - Complex(1.0/sqrt(N),0)*vq;
+      
 		}
 		return r;
 	}

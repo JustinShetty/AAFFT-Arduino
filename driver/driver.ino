@@ -68,12 +68,12 @@ void setup() {
   fourier_sampling(Lambda, xs1, xs2, m, ats1, ats2, reps1, reps2, reps3, N, width);
   delay(1);
 
-   for(int b = 0 ; b < Lambda.freq.size() ; b++){
-     Serial.print(Lambda.freq[b]);
-     Serial.print(" ");
-     Serial.println(Lambda.coef[b]);
-     Serial.println();
-   }
+//   for(int b = 0 ; b < Lambda.freq.size() ; b++){
+//     Serial.print(Lambda.freq[b]);
+//     Serial.print(" ");
+//     Serial.println(Lambda.coef[b]);
+//     Serial.println();
+//   }
   Serial.println("END"); 
 }
 
